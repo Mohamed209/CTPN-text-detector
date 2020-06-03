@@ -1,5 +1,4 @@
 # coding=utf-8
-from nets import model_train as model
 import os
 import shutil
 import sys
@@ -10,6 +9,7 @@ import numpy as np
 import tensorflow as tf
 
 sys.path.append(os.getcwd())
+from nets import model_train as model
 from utils.text_connector.detectors import TextDetector
 from utils.rpn_msr.proposal_layer import proposal_layer
 tf.app.flags.DEFINE_string('test_data_path', 'data/demo/', '')
@@ -18,6 +18,11 @@ tf.app.flags.DEFINE_string('gpu', '0', '')
 tf.app.flags.DEFINE_string('checkpoint_path', 'checkpoints_mlt/', '')
 FLAGS = tf.app.flags.FLAGS
 
+def show_img(img, title="test"):
+    cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+    cv2.imshow(title, img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 def get_images():
     files = []
@@ -111,15 +116,16 @@ def main(argv=None):
 
                 for i, box in enumerate(boxes):
                     points = box[:8].astype(np.int32).reshape((-1, 1, 2))
-                    x0, y0 = points[0][0][0], points[0][0][1]
-                    x1, y1 = points[2][0][0], points[2][0][1]
-                    line = img[y0:y1, x0:x1]
-                    line = cv2.resize(line, (432, 32))
+                    # x0, y0 = points[0][0][0], points[0][0][1]
+                    # x1, y1 = points[2][0][0], points[2][0][1]
+                    # line = img[y0:y1, x0:x1]
+                    # line = cv2.resize(line, (432, 32))
                     cv2.polylines(img, [points], True, color=(0, 255, 0),
                                   thickness=2)
                 img = cv2.resize(img, None, None, fx=1.0 / rh,
                                  fy=1.0 / rw, interpolation=cv2.INTER_LINEAR)
 
+                #show_img(img)
                 cv2.imwrite(os.path.join(FLAGS.output_path,
                                          os.path.basename(im_fn)), img[:, :, ::-1])
                 with open(os.path.join(FLAGS.output_path, os.path.splitext(os.path.basename(im_fn))[0]) + ".txt",
