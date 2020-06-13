@@ -16,6 +16,7 @@ from keras.models import load_model
 from collections import Counter
 from string import punctuation
 letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
+import pytesseract
 ###############################################################
 sys.path.append(os.getcwd())
 from utils.text_connector.detectors import TextDetector
@@ -242,7 +243,7 @@ def main(argv=None):
                 barline = filter_readingbar(boxes, img)
                 invbar = cv2.bitwise_not(barline)
                 #here apply ocr
-                ocrline(barline,ocr,letters)
+                print("ocr >>> ",pytesseract.image_to_string(invbar,config='--psm 6'))
                 show_img(invbar, 'detected bar')
                 cv2.imwrite(os.path.join(FLAGS.output_path,
                                          os.path.basename(im_fn)), invbar)
