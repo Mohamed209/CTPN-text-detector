@@ -15,8 +15,8 @@ import keras.backend as K
 from keras.models import load_model
 from collections import Counter
 from string import punctuation
+from PIL import Image, ImageDraw , ImageFont
 letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
-import pytesseract
 ###############################################################
 sys.path.append(os.getcwd())
 from utils.text_connector.detectors import TextDetector
@@ -29,7 +29,7 @@ tf.app.flags.DEFINE_string('gpu', '0', '')
 tf.app.flags.DEFINE_string('checkpoint_path', 'checkpoints_mlt/', '')
 FLAGS = tf.app.flags.FLAGS
 
-
+font = ImageFont.truetype('main/Amiri-Bold.ttf', 32)
 def get_images():
     files = []
     exts = ['jpg', 'png', 'jpeg', 'JPG', 'tiff']
@@ -71,7 +71,6 @@ def show_img(img, title="test"):
 def ocrline(line, model, letters):
     #line = cv2.cvtColor(line, cv2.COLOR_BGR2GRAY)
     line = cv2.resize(line, (432, 32))
-    show_img(line,'inside ocr')
     line = line/255.0
     line = np.expand_dims(line, -1)
     line = np.expand_dims(line, axis=0)
@@ -173,10 +172,9 @@ def filter_readingbar(boxes, img):
     for idx, box in enumerate(boxes):
         points = box[:8].astype(np.int32).reshape(4, 2)
         line = four_point_transform(img, points)
-        #line = cv2.resize(line, (432, 32))
         lineg = cv2.cvtColor(line, cv2.COLOR_BGR2GRAY)
         mean = np.mean(lineg)
-        means.update({mean: lineg})
+        means.update({mean: [lineg,points]})
     return means[np.min(list(means.keys()))]
 
 
@@ -209,7 +207,7 @@ def main(argv=None):
 
             im_fn_list = get_images()
             ocr_arch_path = 'nets/ocr/test_model.h5'
-            ocr_weights_path = 'checkpoints_mlt/ocr/CRNN--50--0.025.hdf5'
+            ocr_weights_path = 'checkpoints_mlt/ocr/CRNN--50--2.206.hdf5'
             ocr = load_model(ocr_arch_path)
             ocr.load_weights(ocr_weights_path)
             for im_fn in im_fn_list:
@@ -240,14 +238,22 @@ def main(argv=None):
                 boxes = np.array(boxes, dtype=np.int)
                 boxes = sort_boxes(boxes)
                 cost_time = (time.time() - start)
-                barline = filter_readingbar(boxes, img)
+                [barline,position] = filter_readingbar(boxes, img)
                 invbar = cv2.bitwise_not(barline)
-                #here apply ocr
-                print("ocr >>> ",pytesseract.image_to_string(invbar,config='--psm 6'))
-                show_img(invbar, 'detected bar')
+                # here apply ocr
+                ocrres = ocrline(invbar,ocr,letters)
+                pilimage = Image.fromarray(img)
+                draw = ImageDraw.Draw(pilimage)
+                draw.text(xy=(position[0][0]+20,position[0][1]-50),text=ocrres,fill=(0,0,255,0),font=font)
+                img=np.array(pilimage)
+                position=position.reshape(-1,1,2)
+                cv2.polylines(img,[position],True, color=(0, 255, 0),thickness=2)
+                #cv2.putText(img,text=ocrres,org=(position[0][0]+7,position[0][1]+7),color=(255,0,0),thickness=3,fontFace=cv2.LINE_AA,fontScale=1.2)
+                #show_img(invbar, 'detected bar')
                 cv2.imwrite(os.path.join(FLAGS.output_path,
-                                         os.path.basename(im_fn)), invbar)
+                                         os.path.basename(im_fn)), img)
 
 
 if __name__ == '__main__':
     tf.app.run()
+

@@ -5,7 +5,8 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-
+import logging
+logging.basicConfig(level=logging.DEBUG)
 from utils.dataset.data_util import GeneratorEnqueuer
 
 DATA_FOLDER = "data/dataset/mlt/"
@@ -20,7 +21,7 @@ def get_training_data():
                 if filename.endswith(ext):
                     img_files.append(os.path.join(parent, filename))
                     break
-    print('Find {} images'.format(len(img_files)))
+    logging.info('Find {} images'.format(len(img_files)))
     return img_files
 
 
@@ -37,7 +38,7 @@ def load_annoataion(p):
 
 def generator(vis=False):
     image_list = np.array(get_training_data())
-    print('{} training images in {}'.format(image_list.shape[0], DATA_FOLDER))
+    logging.info('{} training images in {}'.format(image_list.shape[0], DATA_FOLDER))
     index = np.arange(0, image_list.shape[0])
     while True:
         np.random.shuffle(index)
@@ -52,11 +53,11 @@ def generator(vis=False):
                 fn, _ = os.path.splitext(fn)
                 txt_fn = os.path.join(DATA_FOLDER, "label", fn + '.txt')
                 if not os.path.exists(txt_fn):
-                    print("Ground truth for image {} not exist!".format(im_fn))
+                    logging.info("Ground truth for image {} not exist!".format(im_fn))
                     continue
                 bbox = load_annoataion(txt_fn)
                 if len(bbox) == 0:
-                    print("Ground truth for image {} empty!".format(im_fn))
+                    logging.info("Ground truth for image {} empty!".format(im_fn))
                     continue
 
                 if vis:
@@ -72,7 +73,7 @@ def generator(vis=False):
                 yield [im], bbox, im_info
 
             except Exception as e:
-                print(e)
+                logging.info(e)
                 continue
 
 
@@ -99,4 +100,4 @@ if __name__ == '__main__':
     gen = get_batch(num_workers=2, vis=True)
     while True:
         image, bbox, im_info = next(gen)
-        print('done')
+        logging.info('done')

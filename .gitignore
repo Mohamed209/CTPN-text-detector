@@ -1,4 +1,3 @@
-data/
 __pycache__/
 cache/
 pretrain/
@@ -18,7 +17,11 @@ checkpoints_*/
 *.pb
 *.ckpt
 ven/
+venv/
 .vscode
-data/demo
 exs/
 nets/ocr
+data/*
+main/ocr.py
+main/demo.py
+main/train.py

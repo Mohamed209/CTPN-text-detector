@@ -1,20 +1,50 @@
-import os
-import shutil
-import sys
-import time
-import math
 import cv2
 import numpy as np
-import tensorflow as tf
-import pyarabic.araby as araby
-import string
-from keras.callbacks import ModelCheckpoint
-from keras.utils import to_categorical
-import keras.backend as K
-from keras.models import load_model
-from collections import Counter
-from string import punctuation
-letters = u'٠١٢٣٤٥٦٧٨٩'+'0123456789'
+import os
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+
+def show_img(img, title="test"):
+    cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+    cv2.imshow(title, img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+def get_images(path):
+    files = []
+    exts = ['jpg', 'png', 'jpeg', 'JPG']
+    for parent, dirnames, filenames in os.walk(path):
+        for filename in filenames:
+            for ext in exts:
+                if filename.endswith(ext):
+                    files.append(os.path.join(parent, filename))
+                    break
+    logging.info('Find {} images'.format(len(files)))
+    return files
+
+
+def resize_image(img):
+    img_size = img.shape
+    im_size_min = np.min(img_size[0:2])
+    im_size_max = np.max(img_size[0:2])
+
+    im_scale = float(600) / float(im_size_min)
+    if np.round(im_scale * im_size_max) > 1200:
+        im_scale = float(1200) / float(im_size_max)
+    new_h = int(img_size[0] * im_scale)
+    new_w = int(img_size[1] * im_scale)
+
+    new_h = new_h if new_h // 16 == 0 else (new_h // 16 + 1) * 16
+    new_w = new_w if new_w // 16 == 0 else (new_w // 16 + 1) * 16
+
+    re_im = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
+    return re_im, (new_h / img_size[0], new_w / img_size[1])
+
+
+def sort_boxes(pts):
+    return np.array(sorted(pts, key=lambda k: [k[1], k[0]]))
 
 
 def order_points(pts):
@@ -70,48 +100,3 @@ def four_point_transform(image, pts):
     warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
     # return the warped image
     return warped
-
-
-def show_img(img, title="test"):
-    cv2.namedWindow(title, cv2.WINDOW_NORMAL)
-    cv2.imshow(title, img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
-def ocrline(line, model, letters):
-    #line = cv2.cvtColor(line, cv2.COLOR_BGR2GRAY)
-    line = cv2.resize(line, (432, 32))
-    line = line/255.0
-    line = np.expand_dims(line, -1)
-    line = np.expand_dims(line, axis=0)
-    prediction = model.predict(line)
-    # use CTC decoder
-    out = K.get_value(K.ctc_decode(prediction, input_length=np.ones(prediction.shape[0])*prediction.shape[1],
-                                   greedy=True)[0][0])
-    # see the results
-    i = 0
-    text = ''
-    for x in out:
-        print("predicted text = ", end='')
-        for p in x:
-            if int(p) != -1:
-                try:
-                    print(letters[int(p)], end='')
-                    text += letters[int(p)]
-                except IndexError:
-                    pass
-        print('\n')
-        i += 1
-    return text
-
-
-if __name__ == "__main__":
-    ocr_arch_path = 'nets/ocr/test_model.h5'
-    ocr_weights_path = 'checkpoints_mlt/ocr/CRNN--50--0.025.hdf5'
-    ocr = load_model(ocr_arch_path)
-    ocr.load_weights(ocr_weights_path)
-    for img in os.listdir('data/lines/'):
-        im = cv2.imread('data/lines/'+img, 0)
-        show_img(im, 'line')
-        ocrline(im, ocr, letters)
