@@ -20,8 +20,11 @@ ven/
 venv/
 .vscode
 exs/
-nets/ocr
-data/*
-main/ocr.py
-main/demo.py
-main/train.py
+nets/ocr/
+data/
+src/main/meter_ocr.py
+src/main/demo.py
+src/main/train.py
+run_test.py
+dist/
+ctpn_text_detector.egg-info/

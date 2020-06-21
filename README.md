@@ -1,6 +1,30 @@
 # text-detection-ctpn
 
-## TODO : add how to use the repo as PIP package
+## How to use the package
+- assuming you are using venv
+- copy cython modules [`bbox.pyx`,`nms.pyx`] and `make.sh` from this repo to `venv/lib/python3.6/site-packages/src/utils/bbox/`
+- run in bbox directory `chmod +x make.sh`
+- then `bash make.sh`
+- if every thing is ok , then you have built cython modules
+- create directory `checkpoints_mlt` and put in it network weights
+- then you are good to go with the detector
+- example
+
+    ```
+    from src.main.text_detector import CTPN
+    from src.utils.detection_utils.detection import show_img
+    import cv2
+
+    net = CTPN(debug=True)
+    image = cv2.imread('test_img.jpg')
+    # return n numpy arrays as detected lines
+    _, lines = net.detect_text(image, to_lines=True)
+    for l in lines:
+        show_img(l)
+    ```
+
+========================================================
+## How to use repo in dev mode
 
 Scene text detection based on ctpn (connectionist text proposal network). It is implemented in tensorflow. The origin paper can be found [here](https://arxiv.org/abs/1609.03605). Also, the origin repo in caffe can be found in [here](https://github.com/tianzhi0549/CTPN). For more detail about the paper and code, see this [blog](http://slade-ruan.me/2017/10/22/text-detection-ctpn/). If you got any questions, check the issue first, if the problem persists, open a new issue.
 ***

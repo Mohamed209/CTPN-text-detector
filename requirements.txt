@@ -46,7 +46,6 @@ tensorflow-tensorboard==0.4.0
 tqdm==4.11.2
 traitlets==4.3.3
 typing==3.7.4.1
-UNKNOWN==0.0.0
 uuid==1.30
 wcwidth==0.1.8
 Werkzeug==1.0.0
