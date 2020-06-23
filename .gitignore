@@ -20,7 +20,7 @@ ven/
 venv/
 .vscode
 exs/
-nets/ocr/
+src/nets/ocr
 data/
 src/main/meter_ocr.py
 src/main/demo.py
