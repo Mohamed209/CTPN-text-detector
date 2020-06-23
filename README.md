@@ -1,20 +1,25 @@
 # text-detection-ctpn
 
 ## How to use the package
-- assuming you are using venv
-- copy cython modules [`bbox.pyx`,`nms.pyx`] and `make.sh` from this repo to `venv/lib/python3.6/site-packages/src/utils/bbox/`
-- run in bbox directory `chmod +x make.sh`
-- then `bash make.sh`
+
+- assuming you inside activated python3 venv
+- `pip install git+https://github.com/Mohamed209/CTPN-text-detector.git@master`
+- go to `venv/lib/python3.6/site-packages/src/utils/bbox/` note that python3.6 may change based on your python version , but recommended to use python3.6
+- run script build.py this will download and build cython modules `python build.py`
 - if every thing is ok , then you have built cython modules
 - create directory `checkpoints_mlt` and put in it network weights
+- create drectory `data/demo` and put your images in it
 - then you are good to go with the detector
 - example
 
 ```python
 from src.main.text_detector import CTPN
 net = CTPN(debug=True)
-net.detect_text(images_path = 'data/demo/')
+# text regions bounding boxes of all detected text in all images in the path
+# line_images : extracted or cropped lines
+text_regions, line_images = net.detect_text(images_path = 'data/demo/')
 ```
+- results are found in `data/res`
 ========================================================
 ## How to use repo in dev mode
 
