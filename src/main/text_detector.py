@@ -11,12 +11,12 @@ import datetime
 from tensorflow.contrib import slim
 logging.basicConfig(level=logging.DEBUG)
 sys.path.append('src/')
-from src.utils.detection_utils.detection import resize_image, show_img, sort_boxes, four_point_transform, order_points
-from src.utils.dataset import data_provider as data_provider
-from src.utils.rpn_msr.proposal_layer import proposal_layer
-from src.utils.text_connector.detectors import TextDetector
-from src.utils.prepare import split_label
 from src.nets import model_train as model
+from src.utils.prepare import split_label
+from src.utils.text_connector.detectors import TextDetector
+from src.utils.rpn_msr.proposal_layer import proposal_layer
+from src.utils.dataset import data_provider as data_provider
+from src.utils.detection_utils.detection import resize_image, show_img, sort_boxes, four_point_transform, order_points
 
 class CTPN:
     '''
@@ -28,9 +28,13 @@ class CTPN:
         tf.app.flags.DEFINE_string(
             'checkpoint_path', weights, '')
         tf.app.flags.DEFINE_boolean('debug', debug, '')
+        tf.app.flags.DEFINE_string('output_path', 'data/res/', '')
         self.flags = tf.app.flags.FLAGS
 
-    def detect_text(self, image, detect_mode='H', to_lines=False):
+    def detect_text(self, images_path, detect_mode='H', to_lines=False):
+        if os.path.exists(self.flags.output_path):
+            shutil.rmtree(self.flags.output_path)
+        os.makedirs(self.flags.output_path)
         os.environ['CUDA_VISIBLE_DEVICES'] = self.flags.gpu
         with tf.get_default_graph().as_default():
             input_image = tf.placeholder(
@@ -54,40 +58,45 @@ class CTPN:
                     ckpt_state.model_checkpoint_path))
                 logging.info('Restore from {}'.format(model_path))
                 saver.restore(sess, model_path)
-                start = time.time()
-                img, (rh, rw) = resize_image(image)
-                h, w, c = img.shape
-                im_info = np.array([h, w, c]).reshape([1, 3])
-                bbox_pred_val, cls_prob_val = sess.run([bbox_pred, cls_prob],
-                                                       feed_dict={input_image: [img],
-                                                                  input_im_info: im_info})
-                textsegs, _ = proposal_layer(
-                    cls_prob_val, bbox_pred_val, im_info)
-                scores = textsegs[:, 0]
-                textsegs = textsegs[:, 1:5]
+                for img in os.listdir(images_path):
+                    image = cv2.imread(images_path+img)
+                    start = time.time()
+                    img, (rh, rw) = resize_image(image)
+                    h, w, c = img.shape
+                    im_info = np.array([h, w, c]).reshape([1, 3])
+                    bbox_pred_val, cls_prob_val = sess.run([bbox_pred, cls_prob],
+                                                           feed_dict={input_image: [img],
+                                                                      input_im_info: im_info})
+                    textsegs, _ = proposal_layer(
+                        cls_prob_val, bbox_pred_val, im_info)
+                    scores = textsegs[:, 0]
+                    textsegs = textsegs[:, 1:5]
 
-                textdetector = TextDetector(DETECT_MODE=detect_mode)
-                boxes = textdetector.detect(
-                    textsegs, scores[:, np.newaxis], img.shape[:2])
-                boxes = np.array(boxes, dtype=np.int)
-                boxes = sort_boxes(boxes)
-                cost_time = (time.time() - start)
-                logging.info("cost time: {:.2f}s".format(cost_time))
-                text_regions = []
-                line_images = []
-                for idx, box in enumerate(boxes):
-                    fourpts = box[:8].astype(np.int32).reshape(4, 2)
-                    if to_lines:
-                        line_images.append(four_point_transform(img,fourpts))
-                    text_regions.append(fourpts)
-                    points = box[:8].astype(np.int32).reshape((-1, 1, 2))
-                    cv2.polylines(img, [points], True, color=(0, 255, 0),
-                                  thickness=2)
-                if self.flags.debug:
-                    img = cv2.resize(img, None, None, fx=1.0 / rh,
-                                     fy=1.0 / rw, interpolation=cv2.INTER_LINEAR)
-                    show_img(img, 'box preds')
-                return text_regions,line_images
+                    textdetector = TextDetector(DETECT_MODE=detect_mode)
+                    boxes = textdetector.detect(
+                        textsegs, scores[:, np.newaxis], img.shape[:2])
+                    boxes = np.array(boxes, dtype=np.int)
+                    boxes = sort_boxes(boxes)
+                    cost_time = (time.time() - start)
+                    logging.info("cost time: {:.2f}s".format(cost_time))
+                    text_regions = []
+                    line_images = []
+                    for idx, box in enumerate(boxes):
+                        fourpts = box[:8].astype(np.int32).reshape(4, 2)
+                        if to_lines:
+                            line_images.append(
+                                four_point_transform(img, fourpts))
+                        text_regions.append(fourpts)
+                        points = box[:8].astype(np.int32).reshape((-1, 1, 2))
+                        cv2.polylines(img, [points], True, color=(0, 255, 0),
+                                      thickness=2)
+                    if self.flags.debug:
+                        img = cv2.resize(img, None, None, fx=1.0 / rh,
+                                         fy=1.0 / rw, interpolation=cv2.INTER_LINEAR)
+                        cv2.imwrite(self.flags.output_path +
+                                    str(uuid.uuid4())+'.png', img)
+                        #show_img(img, 'box preds')
+                return text_regions, line_images
 
     def train(self, lr=1e-5, max_steps=50000, decay_steps=30000, decay_rate=0.1, moving_average_decay=0.997, num_readers=4,
               gpu=0, ckpt_pth='checkpoints_mlt/',

@@ -10,19 +10,11 @@
 - then you are good to go with the detector
 - example
 
-    ```
-    from src.main.text_detector import CTPN
-    from src.utils.detection_utils.detection import show_img
-    import cv2
-
-    net = CTPN(debug=True)
-    image = cv2.imread('test_img.jpg')
-    # return n numpy arrays as detected lines
-    _, lines = net.detect_text(image, to_lines=True)
-    for l in lines:
-        show_img(l)
-    ```
-
+```python
+from src.main.text_detector import CTPN
+net = CTPN(debug=True)
+net.detect_text(images_path = 'data/demo/')
+```
 ========================================================
 ## How to use repo in dev mode
 
@@ -64,10 +56,6 @@ python ./main/demo.py
 ```shell
 python ./utils/prepare/split_label.py
 ```
-- it will generate the prepared data in data/dataset/
-- The input file format demo of split_label.py can be found in [gt_img_859.txt](https://github.com/eragonruan/text-detection-ctpn/blob/banjin-dev/data/readme/gt_img_859.txt). And the output file of split_label.py is [img_859.txt](https://github.com/eragonruan/text-detection-ctpn/blob/banjin-dev/data/readme/img_859.txt). A demo image of the prepared data is shown below.
-<img src="/data/readme/demo_split.png" width=640 height=480 />
-
 ***
 ## train 
 Simplely run
