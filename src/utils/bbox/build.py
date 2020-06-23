@@ -9,4 +9,3 @@ for file in files:
 
 subprocess.run(['chmod', '+x', 'make.sh'])
 subprocess.run(['bash', 'make.sh'])
-subprocess.run('../'*7)
