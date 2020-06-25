@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 import setuptools
 import subprocess
 import requests
+import os
 
 
 def load_req():
@@ -12,7 +13,7 @@ def load_req():
 
 def build_cython_modules(build_path='src/utils/bbox/'):
     files = ['nms.pyx', 'bbox.pyx', 'make.sh']
-    subprocess.run(['cd', build_path])
+    os.chdir(build_path)
     for file in files:
         res = requests.get(
             url='https://raw.githubusercontent.com/Mohamed209/CTPN-text-detector/master/src/utils/bbox/'+file)
@@ -20,6 +21,7 @@ def build_cython_modules(build_path='src/utils/bbox/'):
         code.writelines(res.text)
     subprocess.run(['chmod', '+x', 'make.sh'])
     subprocess.run(['bash', 'make.sh'])
+
 
     # The directory containing this file
 HERE = pathlib.Path(__file__).parent
