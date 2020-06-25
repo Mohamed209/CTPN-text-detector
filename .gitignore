@@ -28,3 +28,4 @@ src/main/train.py
 run_test.py
 dist/
 ctpn_text_detector.egg-info/
+detect_text.py

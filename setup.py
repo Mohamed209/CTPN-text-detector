@@ -1,6 +1,8 @@
 import pathlib
 from setuptools import setup, find_packages
 import setuptools
+import subprocess
+import requests
 
 
 def load_req():
@@ -8,7 +10,18 @@ def load_req():
         return [str(l) for l in req.readlines()]
 
 
-# The directory containing this file
+def build_cython_modules(build_path='src/utils/bbox/'):
+    files = ['nms.pyx', 'bbox.pyx', 'make.sh']
+    subprocess.run(['cd', build_path])
+    for file in files:
+        res = requests.get(
+            url='https://raw.githubusercontent.com/Mohamed209/CTPN-text-detector/master/src/utils/bbox/'+file)
+    with open(file, mode='w') as code:
+        code.writelines(res.text)
+    subprocess.run(['chmod', '+x', 'make.sh'])
+    subprocess.run(['bash', 'make.sh'])
+
+    # The directory containing this file
 HERE = pathlib.Path(__file__).parent
 
 # The text of the README file
@@ -33,3 +46,4 @@ setup(
     ],
     packages=find_packages()
 )
+build_cython_modules()
