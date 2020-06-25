@@ -20,6 +20,7 @@ net = CTPN(debug=True)
 text_regions, line_images = net.detect_text(images_path = 'data/demo/')
 ```
 - results are found in `data/res`
+
 ========================================================
 ## How to use repo in dev mode
 
