@@ -41,22 +41,24 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
-setup(
-    name="ctpn-text-detector",
-    version="2.0.7",
-    install_requires=load_req(),
-    cmdclass={'install': my_install},
-    include_package_data=True,
-    description="encapsulating CTPN text detector in python package",
-    long_description=README,
-    long_description_content_type='text/markdown',
-    url="https://github.com/Mohamed209/CTPN-text-detector",
-    author="Mohamed Mossad",
-    author_email="mohamedmosad209@gmail.com",
-    license="MIT",
-    classifiers=[
-        "License :: OSI Approved :: MIT License",
-        'Programming Language :: Python :: 3',
-    ],
-    packages=find_packages()
-)
+try:
+    setup(
+        name="ctpn-text-detector",
+        version="2.0.7",
+        install_requires=load_req(),
+        include_package_data=True,
+        description="encapsulating CTPN text detector in python package",
+        long_description=README,
+        long_description_content_type='text/markdown',
+        url="https://github.com/Mohamed209/CTPN-text-detector",
+        author="Mohamed Mossad",
+        author_email="mohamedmosad209@gmail.com",
+        license="MIT",
+        classifiers=[
+            "License :: OSI Approved :: MIT License",
+            'Programming Language :: Python :: 3',
+        ],
+        packages=find_packages()
+    )
+finally:
+    build_cython_modules()
