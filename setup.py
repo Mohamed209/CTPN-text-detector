@@ -2,8 +2,6 @@ import pathlib
 from setuptools import setup, find_packages
 import setuptools
 import subprocess
-import requests
-import os
 
 
 def load_req():
@@ -12,6 +10,8 @@ def load_req():
 
 
 def build_cython_modules(build_path='src/utils/bbox/'):
+    import requests
+    import os
     files = ['nms.pyx', 'bbox.pyx', 'make.sh']
     os.chdir(build_path)
     for file in files:
