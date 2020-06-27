@@ -12,37 +12,6 @@ def load_req():
         return [str(l) for l in req.readlines()]
 
 
-def _post_install(build_path='src/utils/bbox/'):
-    import os
-    import requests
-    files = ['nms.pyx', 'bbox.pyx', 'make.sh']
-    os.chdir(build_path)
-    for file in files:
-        res = requests.get(
-            url='https://raw.githubusercontent.com/Mohamed209/CTPN-text-detector/master/src/utils/bbox/'+file)
-    with open(file, mode='w') as code:
-        code.writelines(res.text)
-    subprocess.run(['chmod', '+x', 'make.sh'])
-    subprocess.run(['bash', 'make.sh'])
-
-
-class my_install(install):
-    def run(self):
-        install.run(self)
-        subprocess.run(['pip3', 'install', 'requests'])
-        import requests
-        import os
-        files = ['nms.pyx', 'bbox.pyx', 'make.sh']
-        os.chdir('src/utils/bbox/')
-        for file in files:
-            res = requests.get(
-                url='https://raw.githubusercontent.com/Mohamed209/CTPN-text-detector/master/src/utils/bbox/'+file)
-        with open(file, mode='w') as code:
-            code.writelines(res.text)
-        subprocess.run(['chmod', '+x', 'make.sh'])
-        subprocess.run(['bash', 'make.sh'])
-
-
 def build_cython_modules(build_path='src/utils/bbox/'):
     subprocess.run(['pip3', 'install', 'requests'])
     import requests
@@ -58,6 +27,12 @@ def build_cython_modules(build_path='src/utils/bbox/'):
     subprocess.run(['bash', 'make.sh'])
 
 
+class my_install(install):
+    def run(self):
+        install.run(self)
+        self.execute(build_cython_modules(), msg='Building Cython Modules :)')
+
+
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
 
@@ -65,7 +40,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
-distutils.core.setup(
+setup(
     name="ctpn-text-detector",
     version="2.0.7",
     install_requires=load_req(),
