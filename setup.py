@@ -10,6 +10,7 @@ def load_req():
 
 
 def build_cython_modules(build_path='src/utils/bbox/'):
+    subprocess.run(['pip3', 'install', 'requests'])
     import requests
     import os
     files = ['nms.pyx', 'bbox.pyx', 'make.sh']
@@ -23,7 +24,7 @@ def build_cython_modules(build_path='src/utils/bbox/'):
     subprocess.run(['bash', 'make.sh'])
 
 
-    # The directory containing this file
+# The directory containing this file
 HERE = pathlib.Path(__file__).parent
 
 # The text of the README file
