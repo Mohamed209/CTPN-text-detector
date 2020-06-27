@@ -30,7 +30,8 @@ def build_cython_modules(build_path='src/utils/bbox/'):
 class my_install(install):
     def run(self):
         install.run(self)
-        self.execute(build_cython_modules(), msg='Building Cython Modules :)')
+        self.execute(build_cython_modules, self.install_lib,
+                     msg='Building Cython Modules :)')
 
 
 # The directory containing this file
