@@ -4,6 +4,7 @@ from setuptools.command.install import install
 import setuptools
 import subprocess
 import atexit
+import distutils
 
 
 def load_req():
@@ -25,10 +26,21 @@ def _post_install(build_path='src/utils/bbox/'):
     subprocess.run(['bash', 'make.sh'])
 
 
-class new_install(install):
-    def __init__(self, *args, **kwargs):
-        super(new_install, self).__init__(*args, **kwargs)
-        atexit.register(_post_install)
+class my_install(install):
+    def run(self):
+        install.run(self)
+        subprocess.run(['pip3', 'install', 'requests'])
+        import requests
+        import os
+        files = ['nms.pyx', 'bbox.pyx', 'make.sh']
+        os.chdir('src/utils/bbox/')
+        for file in files:
+            res = requests.get(
+                url='https://raw.githubusercontent.com/Mohamed209/CTPN-text-detector/master/src/utils/bbox/'+file)
+        with open(file, mode='w') as code:
+            code.writelines(res.text)
+        subprocess.run(['chmod', '+x', 'make.sh'])
+        subprocess.run(['bash', 'make.sh'])
 
 
 def build_cython_modules(build_path='src/utils/bbox/'):
@@ -53,11 +65,11 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
-setup(
+distutils.core.setup(
     name="ctpn-text-detector",
     version="2.0.7",
     install_requires=load_req(),
-    cmdclass={'install': new_install},
+    cmdclass={'install': my_install},
     include_package_data=True,
     description="encapsulating CTPN text detector in python package",
     long_description=README,
