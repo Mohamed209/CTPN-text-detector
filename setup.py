@@ -1,12 +1,34 @@
 import pathlib
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 import setuptools
 import subprocess
+import atexit
 
 
 def load_req():
     with open('requirements.txt') as req:
         return [str(l) for l in req.readlines()]
+
+
+def _post_install(build_path='src/utils/bbox/'):
+    import os
+    import requests
+    files = ['nms.pyx', 'bbox.pyx', 'make.sh']
+    os.chdir(build_path)
+    for file in files:
+        res = requests.get(
+            url='https://raw.githubusercontent.com/Mohamed209/CTPN-text-detector/master/src/utils/bbox/'+file)
+    with open(file, mode='w') as code:
+        code.writelines(res.text)
+    subprocess.run(['chmod', '+x', 'make.sh'])
+    subprocess.run(['bash', 'make.sh'])
+
+
+class new_install(install):
+    def __init__(self, *args, **kwargs):
+        super(new_install, self).__init__(*args, **kwargs)
+        atexit.register(_post_install)
 
 
 def build_cython_modules(build_path='src/utils/bbox/'):
@@ -35,6 +57,7 @@ setup(
     name="ctpn-text-detector",
     version="2.0.7",
     install_requires=load_req(),
+    cmdclass={'install': new_install},
     include_package_data=True,
     description="encapsulating CTPN text detector in python package",
     long_description=README,
@@ -49,4 +72,3 @@ setup(
     ],
     packages=find_packages()
 )
-build_cython_modules()
