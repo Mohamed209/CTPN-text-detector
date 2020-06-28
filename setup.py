@@ -21,7 +21,7 @@ setup(
     name="ctpn-text-detector",
     version="3.0.0",
     install_requires=load_req(),
-    ext_modules=cythonize("src/*.pyx",
+    ext_modules=cythonize(["src/*.pyx"],
                           include_path=np.get_include()),
     include_package_data=True,
     description="encapsulating CTPN text detector in python package",
