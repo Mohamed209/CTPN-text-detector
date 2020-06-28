@@ -4,9 +4,6 @@
 
 - assuming you inside activated python3 venv
 - `pip install git+https://github.com/Mohamed209/CTPN-text-detector.git@master`
-- go to `venv/lib/python3.6/site-packages/src/utils/bbox/` note that python3.6 may change based on your python version , but recommended to use python3.6
-- run script build.py this will download and build cython modules `python build.py`
-- if every thing is ok , then you have built cython modules
 - create directory `checkpoints_mlt` and put in it network weights
 - create drectory `data/demo` and put your images in it
 - then you are good to go with the detector
