@@ -1,6 +1,8 @@
 import pathlib
-from setuptools import setup, find_packages
 import subprocess
+from setuptools import setup, find_packages
+from Cython.Build import cythonize
+import numpy as np
 
 
 def load_req():
@@ -19,6 +21,8 @@ setup(
     name="ctpn-text-detector",
     version="3.0.0",
     install_requires=load_req(),
+    ext_modules=cythonize("src/*.pyx",
+                          include_path=np.get_include()),
     include_package_data=True,
     description="encapsulating CTPN text detector in python package",
     long_description=README,
