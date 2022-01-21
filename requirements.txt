@@ -10,7 +10,7 @@ html5lib==0.9999999
 imageio==2.8.0
 imgaug==0.4.0
 imutils==0.5.3
-ipython==5.1.0
+ipython==7.16.3
 ipython-genutils==0.2.0
 Keras==2.1.2
 Keras-Applications==1.0.8
